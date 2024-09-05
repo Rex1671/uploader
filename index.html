@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        #drop-zone {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        #drop-zone.dragging {
+            background-color: #e0e0e0;
+        }
+        #progress-bar {
+            width: 100%;
+            margin-top: 10px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="drop-zone">
+            <p>Drag files here or <span id="browse-button">browse</span></p>
+            <input type="file" id="file-input" multiple style="display:none;">
+        </div>
+        <progress id="progress-bar" value="0" max="100"></progress>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
+
+        
+        const firebaseConfig = {
+  "type": "service_account",
+  "project_id": "evotto-53926",
+  "private_key_id": "135a1d5fa50fd1b17eb0a830dcba86307dc3fe16",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCBfIFzAq7ytgTe\nq6Jjdj452d+1OQKa0dIBDh+nwdx/VdtTxDJtzAEwRZPnYgtqQQ11uABJwWttKJy7\ntYk8Xd1VFpW5YlU22V1qGZEDZVE0Avn+5xDHaXMX48VsQVCYfJMSFt7hBjQDNIWS\n3Hy8R/9e6ZE0pd+oIlOfZVTugNJlK1GhzgPwOpKv16Vz+PqEMqAA6ItFFFdQgY/P\ngW/8APPRZ8G6/YoilznylisAP2qld9gvUSHyMfLrvirYXbbKo/P2uxkgjHvrfGRD\ngOsnHeNeN33uLceXG8t5kUFNgXSOYxNSL6FmzepMXWn+CGaW6bBooLgNfFCw34CR\nsJolbd4TAgMBAAECggEAMYum6o9xypv8FAmfaqhhWfh0YV7NkNjNHqs9UI7cpHqB\nIDW3yAxhvgs5czUwQflfQZZkwdP5G30JL8fgGZGe8YJhStyF16VnWYQr2R1I63pi\nFvdqE6tVJyR3s5rwUFCGY8sNgBPEDh/oJlAoiFCSNcpwTbFUeXyc+6Ylz9bJ6nyT\n/EWCKJLtlFZOp+lu5ghZvT2t2is5QcaNQ1DAEYTr3PTaYOQlnNWEImPV2MpbNbD7\nl3YhIB4oXJhDPfbj4LhaVr/goxjAKOMtIz+KVLVQjHVX3+FESl//21KEwq3AVd/5\n/rqxuBELzFtr0llnPHKK+iQOAfg9jzX+4kOfShlIgQKBgQC2eWx8zoCW7cFPS4mv\nVdyI8Wv3+tZBax0ox6XTVnk+LSLEUZDMb9KMZ4hlNa3BSlHpHzEsXzBg4ljdF8Cf\nCUdoiTeiwrq/rLyoeRutNZUvnkEc7jvC3Ge305cQi0slQ6gJWDwBWQ+RFVS+MyNj\n2WqbjGQl6JII8csSWMDQKIuQgQKBgQC1qUWRGDtBYmGbFyKU9cb3MBQ0g2+zbB/Q\ng5psz4oNu/zCbZ7MtJQ6Odk4eahKDTpT+3XF8qYtPjbunVib4t1C3jNi0STJPU0N\nnVZYuUBpShp2pnlvmndfgu/fqIGhPIGym5HZ8Jb4NlpNuJ5cL5D2gK8hz9Uy6SuC\n+BSSFRfkkwKBgQCURDdNdfFwMYGoL6WRbT/Dmf7zwMJE54cK8qYgAZyEU+JzCB+S\nra2z3hAqxKIJc5z4whqPhkzl/CTeiQU/dCesngox2u4o/m9QqQ8+/1HYHkuj+UNf\nwv0XlfqiO7x0a/Pmm+Yt5jLK3T09SooQAMIp37okP0Qhtm4d2zXYLYmxgQKBgQCG\nUImnJgtp5JvWV9yx1qctzNajnSrRtngva56aJTklvoC8IODw6fNOucbqAslzNySR\nQ7NokGhdu0pSUvRZDfwanL/RqGFSiYiXMGXPY+lD8A5w+9V9tu/cJqvE6oot9NbQ\ngEXupfx5uXY7UO2Fq4W7PJpAnbI82jnZtCNBf2cTEQKBgDqTginA/duNJwOjpMAH\nve8pwL1EQILmrQz44ILqxKwwe2m0uB/AgBm10+koj3U8Wh3Mt135gZHX4l4dxQHP\niUxzZCa64hl0sRGZVGK6IjEAu+cHapbSn34p9fIbbAqsdTlFVBEKN2uvBGVOj/vy\njOrMKT6k2bCz4BAqVcLZS2SU\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-2uqf8@evotto-53926.iam.gserviceaccount.com",
+  "client_id": "107851986615616534789",
+  "storageBucket": "gs://busservice-eaea4.appspot.com",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-2uqf8%40evotto-53926.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const progressBar = document.getElementById('progress-bar');
+            const results = document.getElementById('results');
+
+           dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (event) => {
+                handleFiles(event.target.files);
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragging');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragging');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragging');
+                handleFiles(e.dataTransfer.files);
+            });
+
+           function handleFiles(files) {
+                const now = new Date().toISOString().replace(/:/g, '-');
+                Array.from(files).forEach(file => uploadFile(file, now));
+            }
+
+            function uploadFile(file, folderName) {
+                const fileRef = ref(storage, `${folderName}/${file.name}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        
+                        if (isFinite(progress)) {
+                            progressBar.value = progress;
+                        } else {
+                            console.error('Non-finite progress value:', progress);
+                        }
+                    },
+                    (error) => {
+                        console.error('Upload failed:', error);
+                        results.innerHTML += `<p>Failed to upload ${file.name}</p>`;
+                    },
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        results.innerHTML += `<p>Uploaded ${file.name}: <a href="${downloadURL}" target="_blank">${downloadURL}</a></p>`;
+                    }
+                );
+            }
+        });
+    </script>
+</body>
+</html>

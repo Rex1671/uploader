@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    text-align: center;
+}
+
+#drop-zone {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #fff;
+    width: 300px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+#browse-button {
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#progress-bar {
+    width: 100%;
+    height: 20px;
+    margin-bottom: 20px;
+}
+
+#results {
+    margin-top: 20px;
+}
